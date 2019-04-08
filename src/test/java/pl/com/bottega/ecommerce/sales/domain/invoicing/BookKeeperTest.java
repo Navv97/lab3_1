@@ -89,6 +89,18 @@ public class BookKeeperTest {
         Mockito.verify(taxPolicy, Mockito.times(3)).calculateTax(Matchers.any(ProductType.class),Matchers.any(Money.class));
     }
 
-    
+    @Test
+    public void testTotalCostOfInvoice(){
+        ProductData productData = Mockito.mock(ProductData.class);
+        TaxPolicy taxPolicy = Mockito.mock(TaxPolicy.class);
+        InvoiceRequest invoiceRequest = new InvoiceRequest(new ClientData(new Id("1"),"Bob"));
+        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
+        Mockito.when(taxPolicy.calculateTax(Matchers.any(ProductType.class), Matchers.any(Money.class))).thenReturn(new Tax(new Money(1.99), "Tax Description"));
+        invoiceRequest.add(new RequestItem(productData,1, new Money(1.99)));
+        invoiceRequest.add(new RequestItem(productData,1, new Money(1.99)));
+        invoiceRequest.add(new RequestItem(productData,1, new Money(1.99)));
+        Invoice invoice = bookKeeper.issuance(invoiceRequest, taxPolicy);
+        assertThat(new Money(5.97), is(equalTo(invoice.getNet())));
+    }
 
 }
