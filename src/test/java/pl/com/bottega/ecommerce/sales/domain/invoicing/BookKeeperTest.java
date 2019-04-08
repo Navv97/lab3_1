@@ -17,6 +17,7 @@ import static org.junit.Assert.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BookKeeperTest {
+
     @Test
     public void testIssuanceWithOnePositionShouldReturnInvoiceWithOnePosition(){
         ProductData productData = Mockito.mock(ProductData.class);
@@ -42,5 +43,19 @@ public class BookKeeperTest {
         Invoice invoice = bookKeeper.issuance(invoiceRequest, taxPolicy);
         assertThat(invoice.getItems().size(), is(equalTo(2)));
         Mockito.verify(taxPolicy, Mockito.times(2)).calculateTax(Matchers.any(ProductType.class), Matchers.any(Money.class));
+    }
+
+    @Test
+    public void testIssuanceWithThreePositionsShouldCallGetTypeThreeTimes(){
+        ProductData productData = Mockito.mock(ProductData.class);
+        TaxPolicy taxPolicy = Mockito.mock(TaxPolicy.class);
+        InvoiceRequest invoiceRequest = new InvoiceRequest(new ClientData(new Id("1"),"Bob"));
+        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
+        Mockito.when(taxPolicy.calculateTax(Matchers.any(ProductType.class), Matchers.any(Money.class))).thenReturn(new Tax(new Money(1.99), "Tax Description"));
+        invoiceRequest.add(new RequestItem(productData,1, new Money(1.99)));
+        invoiceRequest.add(new RequestItem(productData,1, new Money(1.99)));
+        invoiceRequest.add(new RequestItem(productData,1, new Money(1.99)));
+        bookKeeper.issuance(invoiceRequest, taxPolicy);
+        Mockito.verify(productData, Mockito.times(3)).getType();
     }
 }
