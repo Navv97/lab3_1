@@ -8,9 +8,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.ClientData;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.Id;
 import pl.com.bottega.ecommerce.sales.domain.client.Client;
+import pl.com.bottega.ecommerce.sales.domain.productscatalog.Product;
 import pl.com.bottega.ecommerce.sales.domain.productscatalog.ProductData;
 import pl.com.bottega.ecommerce.sales.domain.productscatalog.ProductType;
 import pl.com.bottega.ecommerce.sharedkernel.Money;
+
+import java.util.Date;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -21,7 +24,8 @@ public class BookKeeperTest {
 
     @Test
     public void testIssuanceWithOnePositionShouldReturnInvoiceWithOnePosition(){
-        ProductData productData = Mockito.mock(ProductData.class);
+        Product product = new Product(new Id("1"),new Money(21.37),"Peanut butter", ProductType.FOOD);
+        ProductData productData = product.generateSnapshot();
         TaxPolicy taxPolicy = Mockito.mock(TaxPolicy.class);
         InvoiceRequest invoiceRequest = new InvoiceRequest(new ClientData(new Id("1"),"Bob"));
         BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
@@ -34,7 +38,8 @@ public class BookKeeperTest {
 
     @Test
     public void testIssuanceWithTwoPositionsShouldReturnInvoiceWithTwoPositions(){
-        ProductData productData = Mockito.mock(ProductData.class);
+        Product product = new Product(new Id("1"),new Money(21.37),"Peanut butter", ProductType.FOOD);
+        ProductData productData = product.generateSnapshot();
         TaxPolicy taxPolicy = Mockito.mock(TaxPolicy.class);
         InvoiceRequest invoiceRequest = new InvoiceRequest(new ClientData(new Id("1"),"Bob"));
         BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
@@ -47,22 +52,9 @@ public class BookKeeperTest {
     }
 
     @Test
-    public void testIssuanceWithThreePositionsShouldCallGetTypeThreeTimes(){
-        ProductData productData = Mockito.mock(ProductData.class);
-        TaxPolicy taxPolicy = Mockito.mock(TaxPolicy.class);
-        InvoiceRequest invoiceRequest = new InvoiceRequest(new ClientData(new Id("1"),"Bob"));
-        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
-        Mockito.when(taxPolicy.calculateTax(Matchers.any(ProductType.class), Matchers.any(Money.class))).thenReturn(new Tax(new Money(1.99), "Tax Description"));
-        invoiceRequest.add(new RequestItem(productData,1, new Money(1.99)));
-        invoiceRequest.add(new RequestItem(productData,1, new Money(1.99)));
-        invoiceRequest.add(new RequestItem(productData,1, new Money(1.99)));
-        bookKeeper.issuance(invoiceRequest, taxPolicy);
-        Mockito.verify(productData, Mockito.times(3)).getType();
-    }
-
-    @Test
     public void testIssuanceWithManyPositionsShouldCreateInvoiceOnce(){
-        ProductData productData = Mockito.mock(ProductData.class);
+        Product product = new Product(new Id("1"),new Money(21.37),"Peanut butter", ProductType.FOOD);
+        ProductData productData = product.generateSnapshot();
         TaxPolicy taxPolicy = Mockito.mock(TaxPolicy.class);
         InvoiceRequest invoiceRequest = new InvoiceRequest(new ClientData(new Id("1"),"Bob"));
         InvoiceFactory invoiceFactorySpy = Mockito.spy(new InvoiceFactory());
@@ -77,7 +69,8 @@ public class BookKeeperTest {
 
     @Test
     public void testIssuanceWithThreePositionsShouldCallCalculateTaxThreeTimes(){
-        ProductData productData = Mockito.mock(ProductData.class);
+        Product product = new Product(new Id("1"),new Money(21.37),"Peanut butter", ProductType.FOOD);
+        ProductData productData = product.generateSnapshot();
         TaxPolicy taxPolicy = Mockito.mock(TaxPolicy.class);
         InvoiceRequest invoiceRequest = new InvoiceRequest(new ClientData(new Id("1"),"Bob"));
         BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
@@ -91,7 +84,8 @@ public class BookKeeperTest {
 
     @Test
     public void testTotalCostOfInvoice(){
-        ProductData productData = Mockito.mock(ProductData.class);
+        Product product = new Product(new Id("1"),new Money(21.37),"Peanut butter", ProductType.FOOD);
+        ProductData productData = product.generateSnapshot();
         TaxPolicy taxPolicy = Mockito.mock(TaxPolicy.class);
         InvoiceRequest invoiceRequest = new InvoiceRequest(new ClientData(new Id("1"),"Bob"));
         BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
