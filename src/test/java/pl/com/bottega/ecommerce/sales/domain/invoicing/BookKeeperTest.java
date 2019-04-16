@@ -1,5 +1,6 @@
 package pl.com.bottega.ecommerce.sales.domain.invoicing;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
@@ -95,6 +96,21 @@ public class BookKeeperTest {
         invoiceRequest.add(new RequestItem(productData,1, new Money(1.99)));
         Invoice invoice = bookKeeper.issuance(invoiceRequest, taxPolicy);
         assertThat(new Money(5.97), is(equalTo(invoice.getNet())));
+    }
+
+    @Test
+    public void testInvoiceRequestShouldHaveClientData() {
+        Product product = new Product(new Id("1"),new Money(21.37),"Peanut butter", ProductType.FOOD);
+        ProductData productData = product.generateSnapshot();
+        TaxPolicy taxPolicy = Mockito.mock(TaxPolicy.class);
+        InvoiceRequest invoiceRequest = new InvoiceRequest(new ClientData(new Id("1"),"Bob"));
+        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
+        Mockito.when(taxPolicy.calculateTax(Matchers.any(ProductType.class), Matchers.any(Money.class))).thenReturn(new Tax(new Money(1.99), "Tax Description"));
+        invoiceRequest.add(new RequestItem(productData,1, new Money(1.99)));
+        invoiceRequest.add(new RequestItem(productData,1, new Money(1.99)));
+        invoiceRequest.add(new RequestItem(productData,1, new Money(1.99)));
+        Invoice invoice = bookKeeper.issuance(invoiceRequest, taxPolicy);
+        Assert.assertThat(invoice.getClient(), equalTo(invoiceRequest.getClient()));
     }
 
 }
