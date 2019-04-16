@@ -65,4 +65,11 @@ public class AddProductCommandHandlerTest {
         verify(productRepository, times(1)).load(addProductCommand.getProductId());
     }
 
+    @Test
+    public void testHandleShouldCallSaveProductOnce() {
+        addProductCommandHandler.handle(addProductCommand);
+
+        verify(reservationRepository, times(1)).save(any(Reservation.class));
+    }
+
 }
