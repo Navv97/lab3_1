@@ -1,5 +1,6 @@
 package pl.com.bottega.ecommerce.sales.application.api.handler;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.ClientData;
@@ -70,6 +71,18 @@ public class AddProductCommandHandlerTest {
         addProductCommandHandler.handle(addProductCommand);
 
         verify(reservationRepository, times(1)).save(any(Reservation.class));
+    }
+
+    @Test
+    public void testIfProductIsAvailable() {
+        Assert.assertThat(product.isAvailable(), is(true));
+    }
+
+    @Test
+    public void testIfReservationStatusIsOpen() {
+        addProductCommandHandler.handle(addProductCommand);
+
+        Assert.assertThat(reservation.getStatus(), is(Reservation.ReservationStatus.OPENED));
     }
 
 }
