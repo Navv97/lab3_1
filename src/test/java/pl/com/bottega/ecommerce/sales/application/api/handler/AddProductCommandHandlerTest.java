@@ -1,6 +1,7 @@
 package pl.com.bottega.ecommerce.sales.application.api.handler;
 
 import org.junit.Before;
+import org.junit.Test;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.ClientData;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.Id;
 import pl.com.bottega.ecommerce.sales.application.api.command.AddProductCommand;
@@ -18,10 +19,8 @@ import pl.com.bottega.ecommerce.system.application.SystemUser;
 
 import java.util.Date;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.*;
 
 public class AddProductCommandHandlerTest {
     private ReservationRepository reservationRepository;
@@ -51,4 +50,13 @@ public class AddProductCommandHandlerTest {
         when(productRepository.load(addProductCommand.getProductId())).thenReturn(product);
         when(reservationRepository.load(addProductCommand.getOrderId())).thenReturn(reservation);
     }
+
+    @Test
+    public void testHandleShouldReturnOneReservation() {
+        addProductCommandHandler.handle(addProductCommand);
+
+        verify(reservationRepository, times(1)).load(any(Id.class));
+    }
+
+
 }
