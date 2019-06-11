@@ -34,6 +34,8 @@ public class AddProductCommandHandlerTest {
     private Client client;
     private Reservation reservation;
     private Product product;
+    private Product equivalentProduct;
+
 
     @Before
     public void init(){
@@ -46,10 +48,13 @@ public class AddProductCommandHandlerTest {
         addProductCommand = new AddProductCommand(Id.generate(), Id.generate(), 1);
         reservation = new Reservation(Id.generate(), Reservation.ReservationStatus.OPENED, new ClientData(Id.generate(), "Client Data"),new Date());
         product = new Product(Id.generate(), new Money(1), "Standard Product", ProductType.STANDARD);
+        equivalentProduct = new Product(Id.generate(), new Money(1), "Equivalent Product", ProductType.STANDARD);
+        when(suggestionService.suggestEquivalent(eq(product), any(Client.class))).thenReturn(equivalentProduct);
         when(productRepository.load(addProductCommand.getProductId())).thenReturn(product);
-        when(reservationRepository.load(addProductCommand.getOrderId())).thenReturn(reservation);
-        when(productRepository.load(addProductCommand.getProductId())).thenReturn(product);
-        when(reservationRepository.load(addProductCommand.getOrderId())).thenReturn(reservation);
+        when(reservationRepository.load(any(Id.class))).thenReturn(reservation);
+        when(systemContext.getSystemUser()).thenReturn(new SystemUser(Id.generate()));
+        when(suggestionService.suggestEquivalent(any(Product.class), any(Client.class))).thenReturn(
+                new Product(Id.generate(), new Money(1), "Equivalent Product", ProductType.STANDARD));
     }
 
     @Test
@@ -74,8 +79,11 @@ public class AddProductCommandHandlerTest {
     }
 
     @Test
-    public void testIfProductIsAvailable() {
-        Assert.assertThat(product.isAvailable(), is(true));
+    public void testThatSuggestionServiceShouldNotBeCalledWhenProductIsAvailable(){
+        addProductCommandHandler.handle(addProductCommand);
+
+        verify(suggestionService,times(0)).suggestEquivalent(any(Product.class),any(Client.class));
+
     }
 
     @Test
@@ -84,5 +92,15 @@ public class AddProductCommandHandlerTest {
 
         Assert.assertThat(reservation.getStatus(), is(Reservation.ReservationStatus.OPENED));
     }
+
+    @Test
+    public void testSuggestEquivalentProduct() {
+        product.markAsRemoved();
+        when(productRepository.load(any(Id.class))).thenReturn(product);
+
+        addProductCommandHandler.handle(new AddProductCommand(Id.generate(), Id.generate(), 1));
+        verify(suggestionService, times(1)).suggestEquivalent(any(Product.class), any(Client.class));
+    }
+
 
 }
